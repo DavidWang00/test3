@@ -1,4 +1,4 @@
-	.syntax unified
+.syntax unified
 	.arch armv7-a
 	.text
 	.align 2
@@ -9,35 +9,36 @@
 	.type fibonacci, function
 
 fibonacci:
-	@ ADD/MODIFY CODE BELOW
-	@ PROLOG
-	push {r3, r4, r5, lr}
+	@
+	@r1=x
+	@return fibonacci(x-1) +fibonacci(x-2)
 
-	@ R4 = R0 - 0 (update flags)
-	@ if(R0 <= 0) goto .L3 (which returns 0)
+LL1	:
+	push  {r1,r2,r3,LR}
+	cmp   r0,#1			@if(x==1)
+	ITT   EQ
+	moveq r0,#1
+	popeq {r1,r2,r3,pc}
+	
+	cmp   r0,#2			@if(x==2)
+	ITT   EQ
+	moveq r0,#1
+	popeq {r1,r2,r3,pc}	
+	
+	mov   r1,r0			@save x
+	sub   r0,r0,#1		@fibonacci(x-1)
+	bl    LL1
+	
+	mov   r3,r0         @x0=x-1
+	mov   r0,r1
+	sub   r0,r0,#2		@fibonacci(x-2)
+	bl    LL1
 
-	@ Compare R4 wtih 1
-	@ If R4 == 1 goto .L4 (which returns 1)
+	add   r0,r3,r0		@fibonacci(x-1)+fibonacci(x-2)   x0+x1
+		
+	pop   {r1,r2,r3,pc}
 
-	@ R0 = R4 - 1
-	@ Recursive call to fibonacci with R4 - 1 as parameter
 
-	@ R5 = R0
-	@ R0 = R4 - 2
-	@ Recursive call to fibonacci with R4 - 2 as parameter
-
-	@ R0 = R5 + R0 (update flags)
-
-	pop {r3, r4, r5, pc}		@EPILOG
-
-	@ END CODE MODIFICATION
-.L3:
-	mov r0, #0			@ R0 = 0
-	pop {r3, r4, r5, pc}		@ EPILOG
-
-.L4:
-	mov r0, #1			@ R0 = 1
-	pop {r3, r4, r5, pc}		@ EPILOG
 
 	.size fibonacci, .-fibonacci
 	.end
